@@ -1,6 +1,6 @@
 /* ===== SUMMER SCHOOL 2026 - MAIN SCRIPT ===== */
 // UPDATE THIS TO YOUR DEPLOYED RENDER URL IN PRODUCTION
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = 'https://summer-school-backend-0eab.onrender.com';
 
 document.addEventListener('DOMContentLoaded', () => {
 
