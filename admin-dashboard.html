@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal | Summer School 2026</title>
+    <link rel="stylesheet" href="admin-dashboard.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="dashboard-bg"></div>
+
+    <div class="container">
+        <header class="reveal">
+            <div class="logo">
+                <div class="logo-icon">SS</div>
+                <div class="logo-text">
+                    <h1>Admin<span>Portal</span></h1>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <button class="btn-icon" title="Export CSV" id="exportBtn">📥</button>
+                <button class="btn-icon" title="Logout" id="logoutBtn">🚪</button>
+            </div>
+        </header>
+
+        <main>
+            <!-- STATS -->
+            <div class="stats-grid">
+                <div class="stat-card blue reveal" style="animation-delay: 0.1s">
+                    <div class="stat-header">
+                        <span class="stat-label">TOTAL PARTICIPANTS</span>
+                        <span class="stat-icon">👥</span>
+                    </div>
+                    <div class="stat-value" id="statTotal">00</div>
+                </div>
+                <div class="stat-card purple reveal" style="animation-delay: 0.2s">
+                    <div class="stat-header">
+                        <span class="stat-label">PAID TICKETS</span>
+                        <span class="stat-icon">💰</span>
+                    </div>
+                    <div class="stat-value" id="statPaid">00</div>
+                </div>
+                <div class="stat-card green reveal" style="animation-delay: 0.3s">
+                    <div class="stat-header">
+                        <span class="stat-label">CHECKED IN</span>
+                        <span class="stat-icon">✅</span>
+                    </div>
+                    <div class="stat-value" id="statIn">00</div>
+                </div>
+                <div class="stat-card pink reveal" style="animation-delay: 0.4s">
+                    <div class="stat-header">
+                        <span class="stat-label">PENDING PAYMENTS</span>
+                        <span class="stat-icon">⏳</span>
+                    </div>
+                    <div class="stat-value" id="statPending">00</div>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-container reveal" style="animation-delay: 0.5s">
+                <div class="table-header">
+                    <div class="table-title">PARTICIPANT LIST</div>
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Search by name, email or college...">
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table id="participantsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>College</th>
+                                <th>Email</th>
+                                <th>Member</th>
+                                <th>Status</th>
+                                <th>Check-in</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-dim);">
+                                    Fetching data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const API_BASE = 'http://localhost:5000/api/admin';
+        let participants = [];
+
+        async function fetchParticipants() {
+            try {
+                const response = await fetch(`${API_BASE}/participants`);
+                const result = await response.json();
+                if (result.success) {
+                    participants = result.data;
+                    updateDashboard();
+                }
+            } catch (err) {
+                console.error('Error fetching data:', err);
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" style="text-align: center; color: #ef4444;">Connection failed. Is the server running?</td></tr>';
+            }
+        }
+
+        function updateDashboard() {
+            const total = participants.length;
+            const paid = participants.filter(p => p.paymentStatus).length;
+            const checkedIn = participants.filter(p => p.checkedIn).length;
+            const pending = participants.filter(p => !p.paymentStatus).length;
+
+            document.getElementById('statTotal').innerText = total;
+            document.getElementById('statPaid').innerText = paid;
+            document.getElementById('statIn').innerText = checkedIn;
+            document.getElementById('statPending').innerText = pending;
+
+            renderTable(participants);
+        }
+
+        function renderTable(data) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No participants found</td></tr>';
+                return;
+            }
+
+            data.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td data-label="Name">${p.name}</td>
+                    <td data-label="College">${p.college}</td>
+                    <td data-label="Email">${p.email}</td>
+                    <td data-label="Member">
+                        ${p.isIEEEMember ? `<span class="badge badge-paid" style="background:#a855f7">IEEE (${p.ieeeId})</span>` : '<span style="opacity:0.5">NON-IEEE</span>'}
+                    </td>
+                    <td data-label="Status">
+                        <span class="badge ${p.paymentStatus ? 'badge-paid' : 'badge-pending'}">
+                            ${p.paymentStatus ? 'PAID' : 'PENDING'}
+                        </span>
+                    </td>
+                    <td data-label="Check-in">
+                        <span class="badge ${p.checkedIn ? 'badge-in' : ''}" style="${!p.checkedIn ? 'opacity: 0.3' : ''}">
+                            ${p.checkedIn ? 'CHECKED IN' : 'NO'}
+                        </span>
+                    </td>
+                    <td data-label="Actions" class="action-btns">
+                        ${!p.checkedIn ? `<button class="btn-action btn-checkin" onclick="checkIn('${p._id}')">Check-in</button>` : ''}
+                        <button class="btn-action btn-delete" onclick="deleteParticipant('${p._id}')">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        async function checkIn(id) {
+            if (!confirm('Mark as checked-in?')) return;
+            try {
+                const res = await fetch(`${API_BASE}/participant/${id}/checkin`, { method: 'PUT' });
+                const result = await res.json();
+                if (result.success) fetchParticipants();
+            } catch (err) { alert('Check-in failed'); }
+        }
+
+        async function deleteParticipant(id) {
+            if (!confirm('Are you sure you want to delete this record?')) return;
+            try {
+                const res = await fetch(`${API_BASE}/participant/${id}`, { method: 'DELETE' });
+                const result = await res.json();
+                if (result.success) fetchParticipants();
+            } catch (err) { alert('Deletion failed'); }
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            const filtered = participants.filter(p =>
+                p.name.toLowerCase().includes(val) ||
+                p.email.toLowerCase().includes(val) ||
+                p.college.toLowerCase().includes(val)
+            );
+            renderTable(filtered);
+        });
+
+        // Initialize
+        fetchParticipants();
+
+        // Auto Refresh
+        setInterval(fetchParticipants, 30000);
+    </script>
+</body>
+
+</html>

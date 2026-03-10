@@ -1,0 +1,10 @@
+node_modules/
+.env
+.adminjs/
+*.log
+dist/
+build/
+.DS_Store
+backend/node_modules/
+backend/.env
+backend/.adminjs/
