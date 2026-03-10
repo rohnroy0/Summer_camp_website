@@ -1,4 +1,6 @@
 /* ===== SUMMER SCHOOL 2026 - MAIN SCRIPT ===== */
+// UPDATE THIS TO YOUR DEPLOYED RENDER URL IN PRODUCTION
+const API_BASE_URL = 'http://localhost:5000';
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -169,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         // 1. Register temporarily
-        const regRes = await fetch('http://localhost:5000/api/register', {
+        const regRes = await fetch(`${API_BASE_URL}/api/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(participantData)
@@ -180,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const participantId = regData.participantId;
 
         // 2. Create Razorpay Order
-        const orderRes = await fetch('http://localhost:5000/api/create-order', {
+        const orderRes = await fetch(`${API_BASE_URL}/api/create-order`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ participantId })
@@ -201,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
               btn.textContent = 'Verifying Payment...';
 
               // 4. Verify Payment & Confirm
-              const verifyRes = await fetch('http://localhost:5000/api/verify-payment', {
+              const verifyRes = await fetch(`${API_BASE_URL}/api/verify-payment`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
