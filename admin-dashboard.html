@@ -369,18 +369,26 @@
         // ---- EXPORT CSV ----
         document.getElementById('exportBtn').addEventListener('click', () => {
             if (participants.length === 0) return alert('No data to export');
-            const headers = ['Name', 'Email', 'Phone', 'College', 'Department', 'Year', 'IEEE Member', 'IEEE ID', 'Payment', 'Status', 'Checked In'];
+            const headers = ['Name', 'Email', 'Phone', 'College', 'Department', 'Year', 'IEEE Member', 'IEEE ID', 'Payment Amount', 'Payment Status', 'Checked In'];
             const rows = participants.map(p => [
-                p.name, p.email, p.phone, p.college, p.department, p.year,
-                p.isieeemember ? 'Yes' : 'No', p.ieeeid || '', '₹' + p.paymentamount,
+                p.name || '', p.email || '', p.phone || '', p.college || '', p.department || '', p.year || '',
+                p.isieeemember ? 'Yes' : 'No', p.ieeeid || '', p.paymentamount || '',
                 p.paymentstatus ? 'Paid' : 'Pending', p.checkedin ? 'Yes' : 'No'
             ]);
-            const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
-            const blob = new Blob([csv], { type: 'text/csv' });
+
+            // Escape values: wrap in quotes and escape any existing quotes
+            const escapeCsv = (val) => '"' + String(val).replace(/"/g, '""') + '"';
+            const csvContent = [headers, ...rows].map(row => row.map(escapeCsv).join(',')).join('\r\n');
+
+            // Add UTF-8 BOM so Excel recognizes it correctly
+            const BOM = '\uFEFF';
+            const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `participants_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.download = 'participants_' + new Date().toISOString().slice(0, 10) + '.csv';
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
         });
 
         // ---- SEARCH ----
