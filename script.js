@@ -1,6 +1,11 @@
 /* ===== SUMMER SCHOOL 2026 - MAIN SCRIPT ===== */
 // UPDATE THIS TO YOUR DEPLOYED RENDER URL IN PRODUCTION
-const API_BASE_URL = 'https://summer-school-backend-0eab.onrender.com';
+// 1. INITIALIZE SUPABASE
+const SUPABASE_URL = 'https://rgftzhzvzrcooajosqdd.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnZnR6aHp2enJjb29ham9zcWRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDQyMzIsImV4cCI6MjA4ODc4MDIzMn0.FA8DdUmtOTjtbShtEiLytITCgWy_5t9dtqlcEZbyPJA';
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -142,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ieeeCheckbox.addEventListener('change', () => {
       ieeeIdGroup.style.display = ieeeCheckbox.checked ? 'block' : 'none';
       if (regSubmitBtn) {
-        regSubmitBtn.textContent = ieeeCheckbox.checked ? 'Proceed to Pay ₹1,499' : 'Proceed to Pay ₹1,999';
+        regSubmitBtn.textContent = 'Register Now';
       }
     });
   }
@@ -166,95 +171,45 @@ document.addEventListener('DOMContentLoaded', () => {
           college: document.getElementById('regCollege').value,
           department: document.getElementById('regDepartment').value,
           year: document.getElementById('regYear').value,
-          isIEEEMember: document.getElementById('regIsIEEE').checked,
-          ieeeId: document.getElementById('regIsIEEE').checked ? document.getElementById('regIEEEId').value : null
+          isieeemember: document.getElementById('regIsIEEE').checked,
+          ieeeid: document.getElementById('regIsIEEE').checked ? document.getElementById('regIEEEId').value : null
         };
 
-        // 1. Register temporarily
-        const regRes = await fetch(`${API_BASE_URL}/api/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(participantData)
-        });
-        const regData = await regRes.json();
-        if (!regData.success) throw new Error(regData.message || 'Registration failed');
+        if (!supabaseClient) throw new Error('Supabase not initialized properly');
 
-        const participantId = regData.participantId;
+        // 1. Register in Supabase
+        const fee = participantData.isieeemember ? 1499 : 1999;
+        const { data: savedParticipant, error: regError } = await supabaseClient
+          .from('participants')
+          .insert([{
+            ...participantData,
+            paymentamount: fee,
+            paymentstatus: false // Still false as they haven't paid yet
+          }])
+          .select()
+          .single();
 
-        // 2. Create Razorpay Order
-        const orderRes = await fetch(`${API_BASE_URL}/api/create-order`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ participantId })
-        });
-        const orderData = await orderRes.json();
-        if (!orderData.success) throw new Error(orderData.message || 'Failed to create payment order');
+        if (regError) {
+          if (regError.code === '23505') throw new Error('You have already registered with this email');
+          throw new Error(regError.message || 'Registration failed');
+        }
 
-        // 3. Initialize Razorpay Checkout
-        const options = {
-          key: orderData.key_id,
-          amount: orderData.order.amount,
-          currency: orderData.order.currency,
-          name: 'Summer School 2026',
-          description: 'Event Registration Fee',
-          order_id: orderData.order.id,
-          handler: async function (response) {
-            try {
-              btn.textContent = 'Verifying Payment...';
+        // 2. Show Success Message (Bypassing Razorpay)
+        btn.textContent = '✓ Registered!';
+        btn.style.background = 'linear-gradient(135deg, #22d3ee, #10b981)';
 
-              // 4. Verify Payment & Confirm
-              const verifyRes = await fetch(`${API_BASE_URL}/api/verify-payment`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature,
-                  participantId: participantId
-                })
-              });
-              const verifyData = await verifyRes.json();
+        alert('Registration successful! \n\nThank you for choosing Summer School 2026. Since our automated payment gateway is currently under verification, our team will contact you shortly via email/WhatsApp to provide payment details and confirm your seat.');
 
-              if (verifyData.success) {
-                btn.textContent = '✓ Registered & Paid!';
-                btn.style.background = 'linear-gradient(135deg, #22d3ee, #10b981)';
-                alert('Registration and payment successful! Confirmation email with QR sent.');
-                regForm.reset();
-                setTimeout(() => {
-                  btn.textContent = originalText;
-                  btn.style.background = '';
-                  btn.disabled = false;
-                }, 4000);
-              } else {
-                throw new Error(verifyData.message || 'Payment verification failed');
-              }
-            } catch (err) {
-              alert(err.message);
-              btn.textContent = originalText;
-              btn.disabled = false;
-            }
-          },
-          prefill: {
-            name: participantData.name,
-            email: participantData.email,
-            contact: participantData.phone
-          },
-          theme: {
-            color: '#6366f1'
-          }
-        };
-
-        const rzp = new window.Razorpay(options);
-        rzp.on('payment.failed', function (response) {
-          alert("Payment failed: " + response.error.description);
-          btn.textContent = originalText;
+        regForm.reset();
+        setTimeout(() => {
+          btn.textContent = 'Register Now';
+          btn.style.background = '';
           btn.disabled = false;
-        });
-        rzp.open();
+        }, 5000);
 
       } catch (error) {
         alert(error.message);
-        btn.textContent = originalText;
+        btn.textContent = 'Register Now';
         btn.disabled = false;
       }
     });

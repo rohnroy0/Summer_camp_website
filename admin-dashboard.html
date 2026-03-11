@@ -95,35 +95,42 @@
     </div>
 
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // UPDATE THIS TO YOUR DEPLOYED RENDER URL IN PRODUCTION
-        const API_BASE_URL = 'https://summer-school-backend-0eab.onrender.com';
-        const API_BASE = `${API_BASE_URL}/api/admin`;
+        // 1. INITIALIZE SUPABASE
+        const SUPABASE_URL = 'https://rgftzhzvzrcooajosqdd.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnZnR6aHp2enJjb29ham9zcWRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDQyMzIsImV4cCI6MjA4ODc4MDIzMn0.FA8DdUmtOTjtbShtEiLytITCgWy_5t9dtqlcEZbyPJA';
+
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         let participants = [];
 
         async function fetchParticipants() {
             try {
-                const response = await fetch(`${API_BASE}/participants`);
-                const result = await response.json();
-                if (result.success) {
-                    participants = result.data;
-                    updateDashboard();
-                }
+                const { data, error } = await supabaseClient
+                    .from('participants')
+                    .select('*')
+                    .order('createdat', { ascending: false });
+
+                if (error) throw error;
+                participants = data;
+                updateDashboard();
             } catch (err) {
                 console.error('Error fetching data:', err);
-                document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" style="text-align: center; color: #ef4444;">Connection failed. Is the server running?</td></tr>';
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: #ef4444;">Connection failed. Check Supabase configuration.</td></tr>';
             }
         }
 
         function updateDashboard() {
             const total = participants.length;
-            const paid = participants.filter(p => p.paymentStatus).length;
-            const checkedIn = participants.filter(p => p.checkedIn).length;
-            const pending = participants.filter(p => !p.paymentStatus).length;
+            const paid = participants.filter(p => p.paymentstatus).length;
+            const checkedInCount = participants.filter(p => p.checkedin).length;
+            const pending = participants.filter(p => !p.paymentstatus).length;
 
             document.getElementById('statTotal').innerText = total;
             document.getElementById('statPaid').innerText = paid;
-            document.getElementById('statIn').innerText = checkedIn;
+            document.getElementById('statIn').innerText = checkedInCount;
             document.getElementById('statPending').innerText = pending;
 
             renderTable(participants);
@@ -145,21 +152,22 @@
                     <td data-label="College">${p.college}</td>
                     <td data-label="Email">${p.email}</td>
                     <td data-label="Member">
-                        ${p.isIEEEMember ? `<span class="badge badge-paid" style="background:#a855f7">IEEE (${p.ieeeId})</span>` : '<span style="opacity:0.5">NON-IEEE</span>'}
+                        ${p.isieeemember ? `<span class="badge badge-paid" style="background:#a855f7">IEEE (${p.ieeeid || 'N/A'})</span>` : '<span style="opacity:0.5">NON-IEEE</span>'}
                     </td>
                     <td data-label="Status">
-                        <span class="badge ${p.paymentStatus ? 'badge-paid' : 'badge-pending'}">
-                            ${p.paymentStatus ? 'PAID' : 'PENDING'}
+                        <span class="badge ${p.paymentstatus ? 'badge-paid' : 'badge-pending'}">
+                            ${p.paymentstatus ? 'PAID' : 'PENDING'}
                         </span>
                     </td>
                     <td data-label="Check-in">
-                        <span class="badge ${p.checkedIn ? 'badge-in' : ''}" style="${!p.checkedIn ? 'opacity: 0.3' : ''}">
-                            ${p.checkedIn ? 'CHECKED IN' : 'NO'}
+                        <span class="badge ${p.checkedin ? 'badge-in' : ''}" style="${!p.checkedin ? 'opacity: 0.3' : ''}">
+                            ${p.checkedin ? 'CHECKED IN' : 'NO'}
                         </span>
                     </td>
                     <td data-label="Actions" class="action-btns">
-                        ${!p.checkedIn ? `<button class="btn-action btn-checkin" onclick="checkIn('${p._id}')">Check-in</button>` : ''}
-                        <button class="btn-action btn-delete" onclick="deleteParticipant('${p._id}')">Delete</button>
+                        ${!p.paymentstatus ? `<button class="btn-action btn-checkin" style="background:#10b981; color:white;" onclick="markPaid('${p.id}')">Mark Paid</button>` : ''}
+                        ${!p.checkedin ? `<button class="btn-action btn-checkin" onclick="checkIn('${p.id}')">Check-in</button>` : ''}
+                        <button class="btn-action btn-delete" onclick="deleteParticipant('${p.id}')">Delete</button>
                     </td>
                 `;
                 tableBody.appendChild(tr);
@@ -169,18 +177,39 @@
         async function checkIn(id) {
             if (!confirm('Mark as checked-in?')) return;
             try {
-                const res = await fetch(`${API_BASE}/participant/${id}/checkin`, { method: 'PUT' });
-                const result = await res.json();
-                if (result.success) fetchParticipants();
+                const { error } = await supabaseClient
+                    .from('participants')
+                    .update({ checkedin: true })
+                    .eq('id', id);
+
+                if (error) throw error;
+                fetchParticipants();
             } catch (err) { alert('Check-in failed'); }
+        }
+
+        async function markPaid(id) {
+            if (!confirm('Mark this participant as PAID? This cannot be undone.')) return;
+            try {
+                const { error } = await supabaseClient
+                    .from('participants')
+                    .update({ paymentstatus: true })
+                    .eq('id', id);
+
+                if (error) throw error;
+                fetchParticipants();
+            } catch (err) { alert('Update failed'); }
         }
 
         async function deleteParticipant(id) {
             if (!confirm('Are you sure you want to delete this record?')) return;
             try {
-                const res = await fetch(`${API_BASE}/participant/${id}`, { method: 'DELETE' });
-                const result = await res.json();
-                if (result.success) fetchParticipants();
+                const { error } = await supabaseClient
+                    .from('participants')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+                fetchParticipants();
             } catch (err) { alert('Deletion failed'); }
         }
 
