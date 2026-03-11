@@ -376,16 +376,16 @@
                 p.paymentstatus ? 'Paid' : 'Pending', p.checkedin ? 'Yes' : 'No'
             ]);
 
-            // Escape values: wrap in quotes and escape any existing quotes
             const escapeCsv = (val) => '"' + String(val).replace(/"/g, '""') + '"';
             const csvContent = [headers, ...rows].map(row => row.map(escapeCsv).join(',')).join('\r\n');
+            const fileName = 'participants_' + new Date().toISOString().slice(0, 10) + '.csv';
 
-            // Add UTF-8 BOM so Excel recognizes it correctly
-            const BOM = '\uFEFF';
-            const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+            // Use data URI approach for reliable filename
+            const encodedUri = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csvContent);
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'participants_' + new Date().toISOString().slice(0, 10) + '.csv';
+            a.setAttribute('href', encodedUri);
+            a.setAttribute('download', fileName);
+            a.style.display = 'none';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
