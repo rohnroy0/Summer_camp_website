@@ -179,22 +179,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 1. Register in Supabase
         const fee = participantData.isieeemember ? 1499 : 1999;
+        const insertData = {
+          name: participantData.name,
+          email: participantData.email,
+          phone: participantData.phone,
+          college: participantData.college,
+          department: participantData.department,
+          year: participantData.year,
+          isieeemember: participantData.isieeemember,
+          ieeeid: participantData.ieeeid,
+          paymentamount: fee,
+          paymentstatus: false
+        };
+
+        console.log('Inserting data:', insertData);
+
         const { data: savedParticipant, error: regError } = await supabaseClient
           .from('participants')
-          .insert([{
-            ...participantData,
-            paymentamount: fee,
-            paymentstatus: false // Still false as they haven't paid yet
-          }])
+          .insert([insertData])
           .select()
           .single();
 
+        console.log('Insert result - Data:', savedParticipant);
+        console.log('Insert result - Error:', regError);
+
         if (regError) {
+          console.error('Supabase insert error details:', JSON.stringify(regError));
           if (regError.code === '23505') throw new Error('You have already registered with this email');
           throw new Error(regError.message || 'Registration failed');
         }
 
-        // 2. Show Success Message (Bypassing Razorpay)
+        // 2. Show Success Message
         btn.textContent = '✓ Registered!';
         btn.style.background = 'linear-gradient(135deg, #22d3ee, #10b981)';
 
