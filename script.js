@@ -1,5 +1,4 @@
 /* ===== SUMMER SCHOOL 2026 - MAIN SCRIPT ===== */
-// UPDATE THIS TO YOUR DEPLOYED RENDER URL IN PRODUCTION
 // 1. INITIALIZE SUPABASE
 const SUPABASE_URL = 'https://rgftzhzvzrcooajosqdd.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnZnR6aHp2enJjb29ham9zcWRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDQyMzIsImV4cCI6MjA4ODc4MDIzMn0.FA8DdUmtOTjtbShtEiLytITCgWy_5t9dtqlcEZbyPJA';
@@ -192,19 +191,13 @@ document.addEventListener('DOMContentLoaded', () => {
           paymentstatus: false
         };
 
-        console.log('Inserting data:', insertData);
-
         const { data: savedParticipant, error: regError } = await supabaseClient
           .from('participants')
           .insert([insertData])
           .select()
           .single();
 
-        console.log('Insert result - Data:', savedParticipant);
-        console.log('Insert result - Error:', regError);
-
         if (regError) {
-          console.error('Supabase insert error details:', JSON.stringify(regError));
           if (regError.code === '23505') throw new Error('You have already registered with this email');
           throw new Error(regError.message || 'Registration failed');
         }
