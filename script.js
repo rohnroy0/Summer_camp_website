@@ -191,11 +191,9 @@ document.addEventListener('DOMContentLoaded', () => {
           paymentstatus: false
         };
 
-        const { data: savedParticipant, error: regError } = await supabaseClient
+        const { error: regError } = await supabaseClient
           .from('participants')
-          .insert([insertData])
-          .select()
-          .single();
+          .insert([insertData]);
 
         if (regError) {
           if (regError.code === '23505') throw new Error('You have already registered with this email');
