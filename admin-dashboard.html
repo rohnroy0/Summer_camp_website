@@ -287,6 +287,14 @@
             }
         }
 
+        // ---- XSS SANITIZATION ----
+        function escapeHTML(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
         function updateDashboard() {
             const total = participants.length;
             const paid = participants.filter(p => p.paymentstatus).length;
@@ -311,13 +319,18 @@
             }
 
             data.forEach(p => {
+                const safeName = escapeHTML(p.name);
+                const safeCollege = escapeHTML(p.college);
+                const safeEmail = escapeHTML(p.email);
+                const safeIeeeId = escapeHTML(p.ieeeid);
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td data-label="Name">${p.name}</td>
-                    <td data-label="College">${p.college}</td>
-                    <td data-label="Email">${p.email}</td>
+                    <td data-label="Name">${safeName}</td>
+                    <td data-label="College">${safeCollege}</td>
+                    <td data-label="Email">${safeEmail}</td>
                     <td data-label="Member">
-                        ${p.isieeemember ? `<span class="badge badge-paid" style="background:#a855f7">IEEE (${p.ieeeid || 'N/A'})</span>` : '<span style="opacity:0.5">NON-IEEE</span>'}
+                        ${p.isieeemember ? `<span class="badge badge-paid" style="background:#a855f7">IEEE (${safeIeeeId || 'N/A'})</span>` : '<span style="opacity:0.5">NON-IEEE</span>'}
                     </td>
                     <td data-label="Status">
                         <span class="badge ${p.paymentstatus ? 'badge-paid' : 'badge-pending'}">
