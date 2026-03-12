@@ -218,10 +218,6 @@
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // ---- ADMIN CREDENTIALS ----
-        const ADMIN_EMAIL = 'admin@ss2026.com';
-        const ADMIN_PASSWORD = 'SummerSchool@2026';
-
         let participants = [];
 
         // ---- LOGIN LOGIC ----
@@ -230,32 +226,48 @@
         const loginForm = document.getElementById('loginForm');
         const loginError = document.getElementById('loginError');
 
-        // Check if already logged in
-        if (sessionStorage.getItem('adminAuth') === 'true') {
-            loginOverlay.classList.add('hidden');
-            dashboardContent.style.display = '';
-            fetchParticipants();
+        // Check if already logged in via Supabase Auth
+        async function checkSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                loginOverlay.classList.add('hidden');
+                dashboardContent.style.display = '';
+                fetchParticipants();
+            }
         }
+        checkSession();
 
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('adminEmail').value.trim();
             const password = document.getElementById('adminPassword').value;
 
-            if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-                sessionStorage.setItem('adminAuth', 'true');
+            const submitBtn = document.getElementById('loginBtn');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = 'Signing in...';
+            submitBtn.disabled = true;
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
+
+            if (error) {
+                loginError.textContent = error.message || 'Invalid email or password.';
+            } else if (data.session) {
                 loginOverlay.classList.add('hidden');
                 dashboardContent.style.display = '';
                 loginError.textContent = '';
                 fetchParticipants();
-            } else {
-                loginError.textContent = 'Invalid email or password. Please try again.';
             }
         });
 
         // ---- LOGOUT ----
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            sessionStorage.removeItem('adminAuth');
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
             location.reload();
         });
 
@@ -403,8 +415,9 @@
         });
 
         // Auto Refresh every 30s
-        setInterval(() => {
-            if (sessionStorage.getItem('adminAuth') === 'true') {
+        setInterval(async () => {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
                 fetchParticipants();
             }
         }, 30000);
