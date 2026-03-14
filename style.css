@@ -2028,7 +2028,34 @@ footer {
   }
 
   .schedule-item {
-    grid-template-columns: 80px 1fr;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 20px;
+  }
+
+  .schedule-time {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+
+  .schedule-time .duration {
+    margin-top: 0;
+  }
+
+  .schedule-badge {
+    position: relative;
+    top: 0;
+    right: 0;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+
+  .schedule-details h4 {
+    margin-top: 4px;
   }
 }
 
