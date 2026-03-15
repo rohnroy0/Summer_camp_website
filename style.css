@@ -1029,13 +1029,16 @@ section {
 }
 
 .highlights-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 24px;
   margin-top: 56px;
+  justify-content: center;
 }
 
 .highlight-card {
+  flex: 1 1 300px;
+  max-width: 380px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
@@ -1971,7 +1974,7 @@ footer {
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
   .highlights-grid {
-    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
 
   .speakers-grid {
@@ -2011,7 +2014,7 @@ footer {
   }
 
   .highlights-grid {
-    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .speakers-grid {
