@@ -1996,7 +1996,50 @@ footer {
 
 @media (max-width: 768px) {
   section {
-    padding: 70px 0;
+    padding: 60px 0;
+  }
+
+  .container,
+  .nav-container {
+    padding: 0 20px;
+  }
+
+  .hero-content {
+    padding: 100px 0 60px;
+    text-align: center;
+  }
+
+  .hero-subtitle {
+    margin: 0 auto 30px;
+    font-size: 1rem;
+  }
+
+  .hero-meta {
+    justify-content: center;
+    margin-bottom: 35px;
+  }
+
+  .countdown {
+    justify-content: center;
+    margin-bottom: 35px;
+  }
+
+  .hero-buttons {
+    justify-content: center;
+  }
+
+  .about-text {
+    text-align: center;
+  }
+
+  .about-points {
+    align-items: center;
+  }
+
+  .about-point {
+    text-align: left;
+    max-width: 400px;
+    margin: 0 auto;
   }
 
   .nav-links {
@@ -2011,6 +2054,11 @@ footer {
   .registration-inner,
   .contact-grid {
     grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .reg-form-card {
+    padding: 24px;
   }
 
   .highlights-grid {
@@ -2077,6 +2125,22 @@ footer {
 }
 
 @media (max-width: 480px) {
+  section {
+    padding: 50px 0;
+  }
+
+  .hero-content {
+    padding: 80px 0 50px;
+  }
+
+  .hero-title {
+    font-size: clamp(1.8rem, 10vw, 2.8rem);
+  }
+
+  .hero-meta-text {
+    font-size: 0.75rem;
+  }
+
   .speakers-grid {
     flex-direction: column;
     align-items: center;
@@ -2091,17 +2155,25 @@ footer {
   }
 
   .countdown-box {
-    width: 54px;
-    height: 50px;
-    font-size: 1.1rem;
+    width: 50px;
+    height: 46px;
+    font-size: 1rem;
   }
 
   .hero-buttons {
     flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
   }
 
   .footer-grid {
     grid-template-columns: 1fr;
+    gap: 32px;
   }
 
   .gallery-grid {
