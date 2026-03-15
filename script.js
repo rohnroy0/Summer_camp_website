@@ -10,8 +10,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ---- NAVBAR SCROLL ---- */
   const navbar = document.getElementById('navbar');
+  let scrollTicking = false;
   window.addEventListener('scroll', () => {
-    navbar.classList.toggle('scrolled', window.scrollY > 50);
+    if (!scrollTicking) {
+      window.requestAnimationFrame(() => {
+        navbar.classList.toggle('scrolled', window.scrollY > 50);
+        scrollTicking = false;
+      });
+      scrollTicking = true;
+    }
   });
 
   /* ---- HAMBURGER MENU ---- */
@@ -83,22 +90,31 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---- PARTICLES ---- */
   const container = document.getElementById('particles');
   if (container) {
+    const isMobile = window.innerWidth < 768;
+    const particleCount = isMobile ? 15 : 28;
     const colors = ['#00d4ff', '#a855f7', '#6366f1', '#f472b6', '#22d3ee'];
-    for (let i = 0; i < 28; i++) {
+    const fragment = document.createDocumentFragment();
+    
+    for (let i = 0; i < particleCount; i++) {
       const p = document.createElement('div');
       p.className = 'particle';
-      const size = Math.random() * 4 + 2;
-      p.style.cssText = `
-        left: ${Math.random() * 100}%;
-        width: ${size}px; height: ${size}px;
-        background: ${colors[Math.floor(Math.random() * colors.length)]};
-        animation-duration: ${Math.random() * 12 + 8}s;
-        animation-delay: ${Math.random() * 8}s;
-        opacity: ${Math.random() * 0.7 + 0.2};
-        box-shadow: 0 0 ${size * 3}px currentColor;
-      `;
-      container.appendChild(p);
+      const size = Math.random() * (isMobile ? 3 : 4) + 2;
+      const duration = Math.random() * 12 + 8;
+      const delay = Math.random() * 8;
+      
+      p.style.width = `${size}px`;
+      p.style.height = `${size}px`;
+      p.style.left = `${Math.random() * 100}%`;
+      p.style.background = colors[Math.floor(Math.random() * colors.length)];
+      p.style.animationDuration = `${duration}s`;
+      p.style.animationDelay = `${delay}s`;
+      p.style.opacity = Math.random() * 0.5 + 0.2;
+      // Use simpler glow for better performance
+      p.style.boxShadow = `0 0 ${size * 2}px currentColor`;
+      
+      fragment.appendChild(p);
     }
+    container.appendChild(fragment);
   }
 
   /* ---- STAGGER ANIMATION FOR CARDS ---- */
@@ -119,7 +135,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (a.getAttribute('href') === '#' + current) a.style.color = 'var(--neon-blue)';
     });
   };
-  window.addEventListener('scroll', highlightNav);
+  let navTicking = false;
+  window.addEventListener('scroll', () => {
+    if (!navTicking) {
+      window.requestAnimationFrame(() => {
+        highlightNav();
+        navTicking = false;
+      });
+      navTicking = true;
+    }
+  });
 
   /* ---- CURSOR GLOW EFFECT (desktop only) ---- */
   if (window.innerWidth > 768) {
@@ -131,9 +156,16 @@ document.addEventListener('DOMContentLoaded', () => {
       transform:translate(-50%,-50%); transition:left 0.15s ease, top 0.15s ease;
     `;
     document.body.appendChild(glow);
+    let mouseTicking = false;
     document.addEventListener('mousemove', e => {
-      glow.style.left = e.clientX + 'px';
-      glow.style.top = e.clientY + 'px';
+      if (!mouseTicking) {
+        window.requestAnimationFrame(() => {
+          glow.style.left = e.clientX + 'px';
+          glow.style.top = e.clientY + 'px';
+          mouseTicking = false;
+        });
+        mouseTicking = true;
+      }
     });
   }
 
