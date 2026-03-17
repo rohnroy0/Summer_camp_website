@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment | Summer School 2026</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="payment.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+</head>
+<body>
+    <nav class="navbar scrolled">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <div class="nav-logo-icon">SS</div>
+                <div class="nav-logo-text">Summer<span>School</span></div>
+            </a>
+            <div class="nav-links">
+                <a href="index.html">Back to Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="payment-section">
+        <div class="container">
+            <div class="payment-card">
+                <div class="payment-header">
+                    <h1>Complete Your Payment</h1>
+                    <p id="participantInfo">Registration for <strong id="userName">...</strong></p>
+                    <div class="payment-amount" id="payableAmount">₹ --</div>
+                </div>
+
+                <div class="payment-grid">
+                    <div class="payment-qr-side">
+                        <div class="qr-container">
+                            <!-- Placeholder QR Code - User can replace this with actual QR -->
+                            <div id="paymentQR" class="qr-placeholder">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=rohn9609@oksbi&pn=Rohn%20Roy&am=1500&cu=INR" alt="Payment QR Code">
+                            </div>
+                            <p class="qr-hint">Scan to pay with any UPI App</p>
+                        </div>
+                        
+                        <div class="upi-direct">
+                            <span>Or pay directly using:</span>
+                            <a href="#" id="gpayLink" class="btn-gpay">
+                                <img src="https://www.gstatic.com/images/branding/product/2x/gpay_64dp.png" alt="GPay">
+                                Pay via GPay / UPI
+                            </a>
+                            <button type="button" id="copyUpiBtn" class="btn-secondary" style="margin-top: 10px; font-size: 0.8rem; padding: 10px;">
+                                📋 Copy UPI ID: rohn9609@oksbi
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="payment-form-side">
+                        <form id="paymentConfirmForm">
+                            <div class="form-group">
+                                <label>Transaction ID / UTR Number</label>
+                                <input type="text" id="transactionId" placeholder="Enter 12-digit UTR number" required>
+                                <small>You can find this in your payment app history after paying.</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Upload Payment Screenshot</label>
+                                <div class="file-upload-wrapper">
+                                    <input type="file" id="screenshot" accept="image/*" required>
+                                    <div class="file-upload-design">
+                                        <div class="upload-icon">📸</div>
+                                        <span>Click to upload or drag & drop</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="submitPaymentBtn" class="btn-primary" style="width: 100%;">
+                                Submit Payment Details
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="payment-instructions">
+                    <h4>How to pay:</h4>
+                    <ol>
+                        <li>Scan the QR code or click the UPI link to pay the exact amount shown above.</li>
+                        <li>After payment, copy the **Transaction ID** (UTR) from your payment app.</li>
+                        <li>Take a screenshot of the payment confirmation page.</li>
+                        <li>Enter the ID and upload the screenshot here.</li>
+                        <li>Click "Submit" to complete your registration.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="margin-top: 50px;">
+        <div class="container text-center">
+            <p>&copy; 2026 IEEE SB VJEC. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="payment.js"></script>
+</body>
+</html>

@@ -1560,6 +1560,13 @@ section {
   background: var(--bg-card);
 }
 
+#promoMessage {
+  display: block;
+  font-family: var(--font-ui);
+  margin-top: 8px;
+  font-weight: 500;
+}
+
 /* ===== SPONSORS ===== */
 .sponsors {
   background: var(--bg-secondary);

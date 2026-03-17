@@ -169,16 +169,105 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ---- IEEE MEMBERSHIP TOGGLE ---- */
+  /* ---- IEEE MEMBERSHIP TOGGLE & FEE CALCULATION ---- */
   const ieeeCheckbox = document.getElementById('regIsIEEE');
+  const cisCheckbox = document.getElementById('regIsCIS');
   const ieeeIdGroup = document.getElementById('ieeeIdGroup');
+  const cisGroup = document.getElementById('cisGroup');
+  const displayFee = document.getElementById('displayFee');
+  const priceNote = document.getElementById('priceNote');
   const regSubmitBtn = document.getElementById('regSubmitBtn');
+  const promoInput = document.getElementById('regPromoCode');
+  const applyPromoBtn = document.getElementById('applyPromoBtn');
+  const promoMessage = document.getElementById('promoMessage');
+
+  let activeDiscount = 0;
+  let appliedPromoCode = '';
+
+  function calculateFee() {
+    let baseFee = 2700;
+    let note = 'Non-IEEE Member Price';
+
+    if (ieeeCheckbox && ieeeCheckbox.checked) {
+      baseFee = 2300;
+      note = 'IEEE Member Price';
+      if (cisCheckbox && cisCheckbox.checked) {
+        baseFee = 2200;
+        note = 'CIS Society Member Price';
+      }
+    }
+
+    let finalFee = baseFee;
+    if (activeDiscount > 0) {
+      finalFee = baseFee - activeDiscount;
+      note += ` (Promo Code Applied: ₹${activeDiscount.toLocaleString()} OFF)`;
+    }
+
+    if (finalFee < 0) finalFee = 0; // Prevent negative fees
+
+    if (displayFee) displayFee.textContent = `₹${finalFee.toLocaleString()}`;
+    if (priceNote) priceNote.textContent = note;
+    return finalFee;
+  }
 
   if (ieeeCheckbox) {
     ieeeCheckbox.addEventListener('change', () => {
-      ieeeIdGroup.style.display = ieeeCheckbox.checked ? 'block' : 'none';
-      if (regSubmitBtn) {
-        regSubmitBtn.textContent = 'Register Now';
+      const isIEEE = ieeeCheckbox.checked;
+      ieeeIdGroup.style.display = isIEEE ? 'block' : 'none';
+      cisGroup.style.display = isIEEE ? 'flex' : 'none';
+      if (!isIEEE && cisCheckbox) cisCheckbox.checked = false;
+      calculateFee();
+    });
+  }
+
+  if (cisCheckbox) {
+    cisCheckbox.addEventListener('change', calculateFee);
+  }
+
+  /* ---- PROMO CODE LOGIC (Secure Database Verification) ---- */
+  if (applyPromoBtn) {
+    applyPromoBtn.addEventListener('click', async () => {
+      const code = promoInput.value.trim().toUpperCase();
+      if (!code) {
+        promoMessage.textContent = 'Please enter a code';
+        promoMessage.style.color = '#ff4444';
+        promoMessage.style.display = 'block';
+        return;
+      }
+
+      try {
+        applyPromoBtn.textContent = '...';
+        applyPromoBtn.disabled = true;
+
+        // Query Supabase for the promo code
+        const { data, error } = await supabaseClient
+          .from('promocodes')
+          .select('discount_amount, is_active')
+          .eq('code', code)
+          .single();
+
+        if (error || !data || !data.is_active) {
+          activeDiscount = 0;
+          appliedPromoCode = '';
+          promoMessage.textContent = 'Invalid or expired promo code';
+          promoMessage.style.color = '#ff4444';
+          promoMessage.style.display = 'block';
+        } else {
+          activeDiscount = data.discount_amount;
+          appliedPromoCode = code;
+          promoMessage.textContent = `✓ Code Applied! ₹${activeDiscount.toLocaleString()} Discount`;
+          promoMessage.style.color = '#10b981';
+          promoMessage.style.display = 'block';
+        }
+        calculateFee();
+      } catch (err) {
+        console.error('Promo verification error:', err);
+        promoMessage.textContent = 'Verification error. Try again.';
+        promoMessage.style.color = '#ff4444';
+        promoMessage.style.display = 'block';
+      } finally {
+        applyPromoBtn.textContent = 'Apply';
+        applyPromoBtn.disabled = false;
       }
     });
   }
@@ -195,6 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.textContent = 'Processing...';
         btn.disabled = true;
 
+        const fee = calculateFee();
         const participantData = {
           name: document.getElementById('regName').value,
           email: document.getElementById('regEmail').value,
@@ -202,52 +292,45 @@ document.addEventListener('DOMContentLoaded', () => {
           college: document.getElementById('regCollege').value,
           department: document.getElementById('regDepartment').value,
           year: document.getElementById('regYear').value,
-          isieeemember: document.getElementById('regIsIEEE').checked,
-          ieeeid: document.getElementById('regIsIEEE').checked ? document.getElementById('regIEEEId').value : null
+          isieeemember: ieeeCheckbox.checked,
+          iscismember: cisCheckbox ? cisCheckbox.checked : false,
+          ieeeid: ieeeCheckbox.checked ? document.getElementById('regIEEEId').value : null,
+          promocode: appliedPromoCode || null,
+          paymentamount: fee,
+          paymentstatus: false
         };
 
         if (!supabaseClient) throw new Error('Supabase not initialized properly');
 
         // 1. Register in Supabase
-        const fee = participantData.isieeemember ? 1499 : 1999;
-        const insertData = {
-          name: participantData.name,
-          email: participantData.email,
-          phone: participantData.phone,
-          college: participantData.college,
-          department: participantData.department,
-          year: participantData.year,
-          isieeemember: participantData.isieeemember,
-          ieeeid: participantData.ieeeid,
-          paymentamount: fee,
-          paymentstatus: false
-        };
-
         const { error: regError } = await supabaseClient
           .from('participants')
-          .insert([insertData]);
+          .insert([participantData]);
 
         if (regError) {
           if (regError.code === '23505') throw new Error('You have already registered with this email');
           throw new Error(regError.message || 'Registration failed');
         }
 
-        // 2. Show Success Message
-        btn.textContent = '✓ Registered!';
+        // 2. Store data for payment page
+        sessionStorage.setItem('pendingRegistration', JSON.stringify({
+          name: participantData.name,
+          email: participantData.email,
+          amount: fee,
+          promo: appliedPromoCode
+        }));
+
+        // 3. Success Feedback & Redirect
+        btn.textContent = '✓ Taking you to payment...';
         btn.style.background = 'linear-gradient(135deg, #22d3ee, #10b981)';
 
-        alert('Registration successful! \n\nThank you for choosing Summer School 2026. Since our automated payment gateway is currently under verification, our team will contact you shortly via email/WhatsApp to provide payment details and confirm your seat.');
-
-        regForm.reset();
         setTimeout(() => {
-          btn.textContent = 'Register Now';
-          btn.style.background = '';
-          btn.disabled = false;
-        }, 5000);
+          window.location.href = 'payment.html';
+        }, 1500);
 
       } catch (error) {
         alert(error.message);
-        btn.textContent = 'Register Now';
+        btn.textContent = 'Proceed to Pay';
         btn.disabled = false;
       }
     });

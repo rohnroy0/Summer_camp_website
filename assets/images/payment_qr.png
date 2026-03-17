@@ -1,0 +1,5 @@
+/* The image data will be handled by the system since I'm providing the path to an artifact or similar. 
+Actually, I can't just 'write' an image file with text content. I need to use the image provided.
+I will assume the user wants me to use the UPI ID from the image to generate a dynamic QR and also use the image itself if possible.
+Wait, if I have the image, I should save it.
+*/

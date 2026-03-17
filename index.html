@@ -530,8 +530,11 @@
                         bootcamp of the year. Early bird pricing ends soon.</p>
 
                     <div class="reg-price">
-                        <div class="price-amount">₹1,499</div>
-                        <div class="price-note">For IEEE Members (₹1,999 Non-Members)</div>
+                        <div class="price-amount" id="displayFee">₹2,700</div>
+                        <div class="price-note">
+                            <span id="priceNote">Non-IEEE Member Price</span><br>
+                            (IEEE: ₹2,300 | CIS: ₹2,200 | Non-Member: ₹2,700)
+                        </div>
                     </div>
 
                     <div class="reg-features">
@@ -565,14 +568,18 @@
                             <input type="text" id="regDepartment" placeholder="Computer Science" required>
                         </div>
                         <div class="form-group checkbox-group"
-                            style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                            style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
                             <input type="checkbox" id="regIsIEEE" style="width: auto; margin: 0;">
-                            <label for="regIsIEEE" style="margin: 0; cursor: pointer;">I am an IEEE Member
-                                (₹1,499)</label>
+                            <label for="regIsIEEE" style="margin: 0; cursor: pointer;">I am an IEEE Member</label>
                         </div>
-                        <div class="form-group" id="ieeeIdGroup" style="display: none;">
+                        <div class="form-group" id="ieeeIdGroup" style="display: none; margin-bottom: 12px;">
                             <label>IEEE Membership ID</label>
                             <input type="text" id="regIEEEId" placeholder="9xxxxxxxx">
+                        </div>
+                        <div class="form-group checkbox-group" id="cisGroup"
+                            style="display: none; align-items: center; gap: 10px; margin-bottom: 20px;">
+                            <input type="checkbox" id="regIsCIS" style="width: auto; margin: 0;">
+                            <label for="regIsCIS" style="margin: 0; cursor: pointer;">I am a CIS Society Member</label>
                         </div>
                         <div class="form-group">
                             <label>Year of Study</label>
@@ -585,8 +592,16 @@
                                 <option value="other">Other</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label>Promo Code (Optional)</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="regPromoCode" placeholder="Enter Code">
+                                <button type="button" id="applyPromoBtn" class="btn-secondary" style="padding: 0 15px; font-size: 0.85rem; height: 42px;">Apply</button>
+                            </div>
+                            <small id="promoMessage" style="display: none; margin-top: 5px; font-size: 0.8rem;"></small>
+                        </div>
                         <button type="submit" id="regSubmitBtn" style="width: 100%; margin-top: 10px;"
-                            class="btn-primary">Register Now</button>
+                            class="btn-primary">Proceed to Pay</button>
                     </form>
                 </div>
             </div>

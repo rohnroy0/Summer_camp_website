@@ -192,6 +192,8 @@
                                 <th>College</th>
                                 <th>Email</th>
                                 <th>Member</th>
+                                <th>Promo Code</th>
+                                <th>Payment Details</th>
                                 <th>Status</th>
                                 <th>Check-in</th>
                                 <th>Actions</th>
@@ -199,7 +201,7 @@
                         </thead>
                         <tbody id="tableBody">
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-dim);">
+                                <td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-dim);">
                                     Fetching data...</td>
                             </tr>
                         </tbody>
@@ -209,9 +211,29 @@
         </main>
     </div>
 
+    <!-- Image Modal -->
+    <div id="imageModal" class="login-overlay hidden" style="background: rgba(0,0,0,0.9); z-index: 20000; cursor: pointer;">
+        <div style="max-width: 90%; max-height: 90%;">
+            <img id="modalImg" src="" style="max-width: 100%; max-height: 100%; border-radius: 10px; box-shadow: 0 0 50px rgba(0,0,0,0.5);">
+            <div style="text-align: center; color: white; margin-top: 15px; font-family: Inter, sans-serif; font-size: 0.9rem;">
+                Click anywhere to close
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // Modal Logic
+        const imageModal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImg');
+        imageModal.addEventListener('click', () => imageModal.classList.add('hidden'));
+
+        function openModal(url) {
+            modalImg.src = url;
+            imageModal.classList.remove('hidden');
+        }
+
         // 1. INITIALIZE SUPABASE
         const SUPABASE_URL = 'https://rgftzhzvzrcooajosqdd.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnZnR6aHp2enJjb29ham9zcWRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMDQyMzIsImV4cCI6MjA4ODc4MDIzMn0.FA8DdUmtOTjtbShtEiLytITCgWy_5t9dtqlcEZbyPJA';
@@ -284,7 +306,7 @@
                 participants = data;
                 updateDashboard();
             } catch (err) {
-                document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: #ef4444;">Connection failed. Check Supabase configuration.</td></tr>';
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="9" style="text-align: center; color: #ef4444;">Connection failed. Check Supabase configuration.</td></tr>';
             }
         }
 
@@ -315,7 +337,7 @@
             tableBody.innerHTML = '';
 
             if (data.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No participants found</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No participants found</td></tr>';
                 return;
             }
 
@@ -324,6 +346,7 @@
                 const safeCollege = escapeHTML(p.college);
                 const safeEmail = escapeHTML(p.email);
                 const safeIeeeId = escapeHTML(p.ieeeid);
+                const safeTxnId = escapeHTML(p.transactionid);
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -332,6 +355,17 @@
                     <td data-label="Email">${safeEmail}</td>
                     <td data-label="Member">
                         ${p.isieeemember ? `<span class="badge badge-paid" style="background:#a855f7">IEEE (${safeIeeeId || 'N/A'})</span>` : '<span style="opacity:0.5">NON-IEEE</span>'}
+                        ${p.iscismember ? `<br><small style="color:var(--neon-blue)">+ CIS Member</small>` : ''}
+                    </td>
+                    <td data-label="Promo Code">
+                        ${p.promocode ? `<span style="color: #10b981; font-weight: bold;">${escapeHTML(p.promocode)}</span>` : '<span style="opacity: 0.3;">None</span>'}
+                    </td>
+                    <td data-label="Payment Details">
+                        <div style="font-size: 0.8rem; line-height: 1.4;">
+                            <div style="color: var(--text-dim);">TXN: <span style="color: #fff;">${safeTxnId || 'N/A'}</span></div>
+                            <div style="color: var(--text-dim); margin-top: 4px;">Amt: <span style="color: var(--neon-blue); font-weight: bold;">₹${p.paymentamount || '--'}</span></div>
+                            ${p.screenshoturl ? `<button onclick="openModal('${p.screenshoturl}')" style="margin-top: 5px; padding: 4px 8px; font-size: 0.7rem; background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.4); color: white; border-radius: 4px; cursor: pointer;">🖼 View Proof</button>` : '<div style="font-size: 0.7rem; color: #ef4444; margin-top: 5px;">No screenshot</div>'}
+                        </div>
                     </td>
                     <td data-label="Status">
                         <span class="badge ${p.paymentstatus ? 'badge-paid' : 'badge-pending'}">
@@ -344,7 +378,7 @@
                         </span>
                     </td>
                     <td data-label="Actions" class="action-btns">
-                        ${!p.paymentstatus ? `<button class="btn-action btn-checkin" style="background:#10b981; color:white;" onclick="markPaid('${p.id}')">Mark Paid</button>` : ''}
+                        ${!p.paymentstatus ? `<button class="btn-action btn-checkin" style="background:#10b981; color:white;" onclick="markPaid('${p.id}')">Verify & Paid</button>` : ''}
                         ${!p.checkedin ? `<button class="btn-action btn-checkin" onclick="checkIn('${p.id}')">Check-in</button>` : ''}
                         <button class="btn-action btn-delete" onclick="deleteParticipant('${p.id}')">Delete</button>
                     </td>
@@ -395,10 +429,10 @@
         // ---- EXPORT CSV ----
         document.getElementById('exportBtn').addEventListener('click', () => {
             if (participants.length === 0) return alert('No data to export');
-            const headers = ['Name', 'Email', 'Phone', 'College', 'Department', 'Year', 'IEEE Member', 'IEEE ID', 'Payment Amount', 'Payment Status', 'Checked In'];
+            const headers = ['Name', 'Email', 'Phone', 'College', 'Department', 'Year', 'IEEE Member', 'IEEE ID', 'Promo Code', 'Payment Amount', 'Payment Status', 'Checked In'];
             const rows = participants.map(p => [
                 p.name || '', p.email || '', p.phone || '', p.college || '', p.department || '', p.year || '',
-                p.isieeemember ? 'Yes' : 'No', p.ieeeid || '', p.paymentamount || '',
+                p.isieeemember ? 'Yes' : 'No', p.ieeeid || '', p.promocode || '', p.paymentamount || '',
                 p.paymentstatus ? 'Paid' : 'Pending', p.checkedin ? 'Yes' : 'No'
             ]);
 
