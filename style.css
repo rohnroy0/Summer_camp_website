@@ -575,16 +575,60 @@ section {
 .hero-title .line1 {
   display: block;
   color: #fff;
+  font-size: 0.8em;
+  opacity: 0.9;
+  letter-spacing: -0.02em;
 }
 
-.hero-title .line2 {
+.sparkx-title {
   display: block;
-  background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-purple) 50%, var(--neon-pink) 100%);
+  font-size: 1.25em;
+  background: linear-gradient(135deg, #fff 0%, var(--neon-blue) 25%, var(--neon-purple) 60%, var(--neon-pink) 100%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  background-size: 200% auto;
-  animation: shimmer 4s linear infinite;
+  filter: drop-shadow(0 0 15px rgba(0, 212, 255, 0.4));
+  animation: sparkx-glow 3s ease-in-out infinite alternate, shimmer 4s linear infinite;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  position: relative;
+  line-height: 1;
+  margin-top: 8px;
+}
+
+.sparkx-title sup {
+  font-size: 0.35em;
+  color: var(--neon-blue);
+  vertical-align: top;
+  margin-top: -0.2em;
+  margin-left: 2px;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 1);
+  letter-spacing: 0;
+  -webkit-text-fill-color: var(--neon-blue);
+}
+
+@keyframes sparkx-glow {
+  from {
+    filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.3));
+    transform: scale(1);
+  }
+  to {
+    filter: drop-shadow(0 0 25px rgba(168, 85, 247, 0.6));
+    transform: scale(1.02);
+  }
+}
+
+.nav-logo-text strong {
+  color: var(--neon-purple);
+  font-weight: 800;
+  margin-left: 6px;
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+}
+
+.footer-brand h3 strong {
+  color: var(--neon-blue);
+  margin-left: 8px;
 }
 
 .hero-subtitle {
