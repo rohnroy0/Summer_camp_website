@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. GET SESSION DATA
     const pendingData = JSON.parse(sessionStorage.getItem('pendingRegistration'));
 
-    const upiId = 'rohn9609@oksbi';
-    const payeeName = 'Rohn Roy';
+    const upiId = '229675178001671@cnrb';
+    const payeeName = 'IEEE SB VJEC';
     const txnNote = 'Summer School 2026 Registration';
 
     function getUpiUrl(amount) {

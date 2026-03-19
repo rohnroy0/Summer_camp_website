@@ -90,28 +90,72 @@
 }
 
 .btn-gpay {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
-    background: white;
-    color: #3c4043;
-    padding: 14px;
+    background: rgba(13, 22, 48, 0.6);
+    color: var(--text-primary);
+    padding: 16px;
     border-radius: var(--radius-md);
     font-weight: 600;
-    font-size: 1rem;
-    transition: var(--transition);
-    border: 1px solid #dadce0;
+    font-size: 1.05rem;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 212, 255, 0.1);
+    backdrop-filter: blur(12px);
+    overflow: hidden;
+    z-index: 1;
+    text-decoration: none;
+}
+
+.btn-gpay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(0, 212, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-25deg);
+    transition: all 0.6s ease;
+    z-index: -1;
 }
 
 .btn-gpay:hover {
-    background: #f8fafc;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255,255,255,0.1);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 35px rgba(0, 212, 255, 0.5), inset 0 0 15px rgba(0, 212, 255, 0.2);
+    border-color: var(--neon-blue);
+    background: rgba(13, 22, 48, 0.9);
+    color: #fff;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
 }
 
-.btn-gpay img {
-    height: 24px;
+.btn-gpay:hover::before {
+    animation: shine-gpay 1.5s infinite;
+}
+
+@keyframes shine-gpay {
+    0% { left: -100%; }
+    100% { left: 200%; }
+}
+
+.btn-gpay img,
+.btn-gpay svg {
+    height: 28px;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.15));
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-gpay:hover img,
+.btn-gpay:hover svg {
+    transform: scale(1.15) rotate(2deg);
 }
 
 .file-upload-wrapper {
