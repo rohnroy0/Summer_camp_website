@@ -28,9 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!pendingData) {
         console.warn('No pending registration found in session. Using dummy data for demo.');
         document.getElementById('userName').textContent = "Guest User";
-        document.getElementById('payableAmount').textContent = "₹ 2,700";
+        document.getElementById('payableAmount').textContent = "₹ 2,500";
         
-        const demoAmount = 2700;
+        const demoAmount = 2500;
         const upiUrl = getUpiUrl(demoAmount);
         
         const qrImg = document.querySelector('#paymentQR img');
@@ -40,9 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('gpayLink').href = upiUrl;
     } else {
         document.getElementById('userName').textContent = pendingData.name;
-        document.getElementById('payableAmount').textContent = `₹ ${pendingData.amount.toLocaleString()}`;
+        document.getElementById('payableAmount').textContent = `₹ ${pendingData.paymentamount.toLocaleString()}`;
         
-        const upiUrl = getUpiUrl(pendingData.amount);
+        const upiUrl = getUpiUrl(pendingData.paymentamount);
         
         const qrImg = document.querySelector('#paymentQR img');
         if (qrImg) {
@@ -81,8 +81,18 @@ document.addEventListener('DOMContentLoaded', () => {
     paymentForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const transactionId = document.getElementById('transactionId').value;
+        const transactionId = document.getElementById('transactionId').value.trim();
         const screenshotFile = fileInput.files[0];
+
+        if (!transactionId || transactionId.length < 8) {
+            alert('Please enter a valid Transaction ID/UTR number (at least 8 characters).');
+            return;
+        }
+
+        if (!screenshotFile) {
+            alert('Please upload a screenshot of your payment.');
+            return;
+        }
 
         if (!pendingData) {
             alert('Error: Registration session not found. Please try registering again.');
@@ -121,23 +131,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('General Storage Error:', storageErr);
             }
 
-            // Step B: Update Participant Record
-            const { error: updateError } = await supabaseClient
-                .from('participants')
-                .update({ 
-                    paymentstatus: true, // Mark as paid/pending-verification
-                    transactionid: transactionId,
-                    screenshoturl: screenshotUrl
-                })
-                .eq('email', pendingData.email);
+            // Step B: Final Submission - INSERT FULL DATA
+            const finalParticipantData = {
+                ...pendingData,
+                paymentstatus: true,
+                transactionid: transactionId,
+                screenshoturl: screenshotUrl,
+                createdat: new Date().toISOString()
+            };
 
-            if (updateError) throw updateError;
+            const { error: insertError } = await supabaseClient
+                .from('participants')
+                .insert([finalParticipantData]);
+
+            if (insertError) {
+                if (insertError.code === '23505') throw new Error('You have already registered with this email.');
+                throw insertError;
+            }
 
             // Success!
-            submitBtn.textContent = '✓ Payment Submitted';
+            submitBtn.textContent = '✓ Registration Complete';
             submitBtn.style.background = 'linear-gradient(135deg, #22d3ee, #10b981)';
 
-            alert('Payment details submitted successfully! \n\nOur team will verify your transaction and send the confirmation email/WhatsApp within 24 hours. See you at Summer School 2026!');
+            alert('Registration successful! \n\nOur team will verify your payment and send the confirmation within 24 hours. See you at Summer School 2026!');
             
             sessionStorage.removeItem('pendingRegistration');
             setTimeout(() => {

@@ -176,35 +176,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const cisGroup = document.getElementById('cisGroup');
   const displayFee = document.getElementById('displayFee');
   const priceNote = document.getElementById('priceNote');
-  const regSubmitBtn = document.getElementById('regSubmitBtn');
-  const promoInput = document.getElementById('regPromoCode');
-  const applyPromoBtn = document.getElementById('applyPromoBtn');
-  const promoMessage = document.getElementById('promoMessage');
-
   let activeDiscount = 0;
-  let appliedPromoCode = '';
 
   function calculateFee() {
-    let baseFee = 2700;
+    let baseFee = 2500;
     let note = 'Non-IEEE Member Price';
 
     if (ieeeCheckbox && ieeeCheckbox.checked) {
-      baseFee = 2300;
+      baseFee = 2200;
       note = 'IEEE Member Price';
       if (cisCheckbox && cisCheckbox.checked) {
-        baseFee = 2200;
+        baseFee = 2000;
         note = 'CIS Society Member Price';
       }
     }
 
     let finalFee = baseFee;
-    if (activeDiscount > 0) {
-      finalFee = baseFee - activeDiscount;
-      note += ` (Promo Code Applied: ₹${activeDiscount.toLocaleString()} OFF)`;
-    }
-
-    if (finalFee < 0) finalFee = 0; // Prevent negative fees
-
     if (displayFee) displayFee.textContent = `₹${finalFee.toLocaleString()}`;
     if (priceNote) priceNote.textContent = note;
     return finalFee;
@@ -224,54 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
     cisCheckbox.addEventListener('change', calculateFee);
   }
 
-  /* ---- PROMO CODE LOGIC (Secure Database Verification) ---- */
-  if (applyPromoBtn) {
-    applyPromoBtn.addEventListener('click', async () => {
-      const code = promoInput.value.trim().toUpperCase();
-      if (!code) {
-        promoMessage.textContent = 'Please enter a code';
-        promoMessage.style.color = '#ff4444';
-        promoMessage.style.display = 'block';
-        return;
-      }
-
-      try {
-        applyPromoBtn.textContent = '...';
-        applyPromoBtn.disabled = true;
-
-        // Query Supabase for the promo code
-        const { data, error } = await supabaseClient
-          .from('promocodes')
-          .select('discount_amount, is_active')
-          .eq('code', code)
-          .single();
-
-        if (error || !data || !data.is_active) {
-          activeDiscount = 0;
-          appliedPromoCode = '';
-          promoMessage.textContent = 'Invalid or expired promo code';
-          promoMessage.style.color = '#ff4444';
-          promoMessage.style.display = 'block';
-        } else {
-          activeDiscount = data.discount_amount;
-          appliedPromoCode = code;
-          promoMessage.textContent = `✓ Code Applied! ₹${activeDiscount.toLocaleString()} Discount`;
-          promoMessage.style.color = '#10b981';
-          promoMessage.style.display = 'block';
-        }
-        calculateFee();
-      } catch (err) {
-        console.error('Promo verification error:', err);
-        promoMessage.textContent = 'Verification error. Try again.';
-        promoMessage.style.color = '#ff4444';
-        promoMessage.style.display = 'block';
-      } finally {
-        applyPromoBtn.textContent = 'Apply';
-        applyPromoBtn.disabled = false;
-      }
-    });
-  }
-
   /* ---- REGISTRATION FORM SUBMIT ---- */
   const regForm = document.getElementById('regForm');
   if (regForm) {
@@ -281,52 +220,46 @@ document.addEventListener('DOMContentLoaded', () => {
       const originalText = btn.textContent;
 
       try {
-        btn.textContent = 'Processing...';
+        btn.textContent = 'Preparing Payment...';
         btn.disabled = true;
+
+        const name = document.getElementById('regName').value.trim();
+        const email = document.getElementById('regEmail').value.trim();
+        const phone = document.getElementById('regPhone').value.trim();
+        const college = document.getElementById('regCollege').value.trim();
+        const dept = document.getElementById('regDepartment').value.trim();
+        const year = document.getElementById('regYear').value;
+        const ieeeId = ieeeCheckbox.checked ? document.getElementById('regIEEEId').value.trim() : null;
+
+        if (ieeeCheckbox.checked && (!ieeeId || ieeeId.length < 5)) {
+          alert('Please enter a valid IEEE Membership ID.');
+          btn.disabled = false;
+          btn.textContent = originalText;
+          return;
+        }
 
         const fee = calculateFee();
         const participantData = {
-          name: document.getElementById('regName').value,
-          email: document.getElementById('regEmail').value,
-          phone: document.getElementById('regPhone').value,
-          college: document.getElementById('regCollege').value,
-          department: document.getElementById('regDepartment').value,
-          year: document.getElementById('regYear').value,
+          name, email, phone, college,
+          department: dept,
+          year,
           isieeemember: ieeeCheckbox.checked,
           iscismember: cisCheckbox ? cisCheckbox.checked : false,
-          ieeeid: ieeeCheckbox.checked ? document.getElementById('regIEEEId').value : null,
-          promocode: appliedPromoCode || null,
+          ieeeid: ieeeId,
           paymentamount: fee,
-          paymentstatus: false
+          createdat: new Date().toISOString()
         };
 
-        if (!supabaseClient) throw new Error('Supabase not initialized properly');
+        // 1. SAVE TO SESSIONSTORAGE ONLY (NOT SUPABASE)
+        sessionStorage.setItem('pendingRegistration', JSON.stringify(participantData));
 
-        // 1. Register in Supabase
-        const { error: regError } = await supabaseClient
-          .from('participants')
-          .insert([participantData]);
-
-        if (regError) {
-          if (regError.code === '23505') throw new Error('You have already registered with this email');
-          throw new Error(regError.message || 'Registration failed');
-        }
-
-        // 2. Store data for payment page
-        sessionStorage.setItem('pendingRegistration', JSON.stringify({
-          name: participantData.name,
-          email: participantData.email,
-          amount: fee,
-          promo: appliedPromoCode
-        }));
-
-        // 3. Success Feedback & Redirect
-        btn.textContent = '✓ Taking you to payment...';
+        // 2. Redirect to payment
+        btn.textContent = '✓ Redirecting to payment...';
         btn.style.background = 'linear-gradient(135deg, #22d3ee, #10b981)';
 
         setTimeout(() => {
           window.location.href = 'payment.html';
-        }, 1500);
+        }, 1200);
 
       } catch (error) {
         alert(error.message);

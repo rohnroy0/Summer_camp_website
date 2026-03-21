@@ -192,7 +192,6 @@
                                 <th>College</th>
                                 <th>Email</th>
                                 <th>Member</th>
-                                <th>Promo Code</th>
                                 <th>Payment Details</th>
                                 <th>Status</th>
                                 <th>Check-in</th>
@@ -347,6 +346,9 @@
                 const safeEmail = escapeHTML(p.email);
                 const safeIeeeId = escapeHTML(p.ieeeid);
                 const safeTxnId = escapeHTML(p.transactionid);
+                const safePromo = escapeHTML(p.promocode);
+                const safeAmount = escapeHTML(String(p.paymentamount || '--'));
+                const safeScreenshot = p.screenshoturl ? escapeHTML(p.screenshoturl) : null;
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -357,14 +359,11 @@
                         ${p.isieeemember ? `<span class="badge badge-paid" style="background:#a855f7">IEEE (${safeIeeeId || 'N/A'})</span>` : '<span style="opacity:0.5">NON-IEEE</span>'}
                         ${p.iscismember ? `<br><small style="color:var(--neon-blue)">+ CIS Member</small>` : ''}
                     </td>
-                    <td data-label="Promo Code">
-                        ${p.promocode ? `<span style="color: #10b981; font-weight: bold;">${escapeHTML(p.promocode)}</span>` : '<span style="opacity: 0.3;">None</span>'}
-                    </td>
                     <td data-label="Payment Details">
                         <div style="font-size: 0.8rem; line-height: 1.4;">
                             <div style="color: var(--text-dim);">TXN: <span style="color: #fff;">${safeTxnId || 'N/A'}</span></div>
-                            <div style="color: var(--text-dim); margin-top: 4px;">Amt: <span style="color: var(--neon-blue); font-weight: bold;">₹${p.paymentamount || '--'}</span></div>
-                            ${p.screenshoturl ? `<button onclick="openModal('${p.screenshoturl}')" style="margin-top: 5px; padding: 4px 8px; font-size: 0.7rem; background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.4); color: white; border-radius: 4px; cursor: pointer;">🖼 View Proof</button>` : '<div style="font-size: 0.7rem; color: #ef4444; margin-top: 5px;">No screenshot</div>'}
+                            <div style="color: var(--text-dim); margin-top: 4px;">Amt: <span style="color: var(--neon-blue); font-weight: bold;">₹${safeAmount}</span></div>
+                            ${safeScreenshot ? `<button onclick="openModal('${safeScreenshot}')" style="margin-top: 5px; padding: 4px 8px; font-size: 0.7rem; background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.4); color: white; border-radius: 4px; cursor: pointer;">🖼 View Proof</button>` : '<div style="font-size: 0.7rem; color: #ef4444; margin-top: 5px;">No screenshot</div>'}
                         </div>
                     </td>
                     <td data-label="Status">
@@ -429,10 +428,10 @@
         // ---- EXPORT CSV ----
         document.getElementById('exportBtn').addEventListener('click', () => {
             if (participants.length === 0) return alert('No data to export');
-            const headers = ['Name', 'Email', 'Phone', 'College', 'Department', 'Year', 'IEEE Member', 'IEEE ID', 'Promo Code', 'Payment Amount', 'Payment Status', 'Checked In'];
+            const headers = ['Name', 'Email', 'Phone', 'College', 'Department', 'Year', 'IEEE Member', 'IEEE ID', 'Payment Amount', 'Payment Status', 'Checked In'];
             const rows = participants.map(p => [
                 p.name || '', p.email || '', p.phone || '', p.college || '', p.department || '', p.year || '',
-                p.isieeemember ? 'Yes' : 'No', p.ieeeid || '', p.promocode || '', p.paymentamount || '',
+                p.isieeemember ? 'Yes' : 'No', p.ieeeid || '', p.paymentamount || '',
                 p.paymentstatus ? 'Paid' : 'Pending', p.checkedin ? 'Yes' : 'No'
             ]);
 
