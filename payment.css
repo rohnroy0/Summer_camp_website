@@ -235,3 +235,67 @@
         font-size: 2.5rem;
     }
 }
+
+/* Secondary QR Styles */
+.qr-wrapper {
+    position: relative;
+}
+
+.qr-separator {
+    text-align: center;
+    margin: 40px 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-separator::before,
+.qr-separator::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+}
+
+.qr-separator span {
+    background: var(--bg-card);
+    padding: 0 15px;
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+}
+
+.qr-note-box {
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-left: 4px solid var(--neon-purple);
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    animation: pulse-glow 3s infinite ease-in-out;
+}
+
+.qr-note-box p {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+.backup-btn {
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+.backup-btn:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 35px rgba(139, 92, 246, 0.4);
+    border-color: var(--neon-purple);
+}
+
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 5px rgba(139, 92, 246, 0.1); }
+    50% { box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
+    100% { box-shadow: 0 0 5px rgba(139, 92, 246, 0.1); }
+}

@@ -12,12 +12,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const upiId = '229675178001671@cnrb';
     const payeeName = 'IEEE SB VJEC';
+    const upiIdBackup = 'alanantony896@oksbi';
+    const payeeNameBackup = 'Alan Antony';
     const txnNote = 'Summer School 2026 Registration';
 
-    function getUpiUrl(amount) {
+    function getUpiUrl(amount, upi = upiId, name = payeeName) {
         const params = new URLSearchParams({
-            pa: upiId,
-            pn: payeeName,
+            pa: upi,
+            pn: name,
             am: amount,
             tn: txnNote,
             cu: 'INR'
@@ -25,30 +27,36 @@ document.addEventListener('DOMContentLoaded', () => {
         return `upi://pay?${params.toString()}`;
     }
 
+    function updatePaymentUI(amount) {
+        document.getElementById('payableAmount').textContent = `₹ ${amount.toLocaleString()}`;
+        
+        // Primary UPI Update
+        const upiUrl = getUpiUrl(amount);
+        const qrImg = document.querySelector('#paymentQR img');
+        if (qrImg) {
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`;
+        }
+        document.getElementById('gpayLink').href = upiUrl;
+
+        // Backup UPI Update
+        const upiUrlBackup = getUpiUrl(amount, upiIdBackup, payeeNameBackup);
+        const qrImgBackup = document.querySelector('#backupQR img');
+        if (qrImgBackup) {
+            qrImgBackup.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrlBackup)}`;
+        }
+        const gpayLinkSecondary = document.getElementById('gpayLinkSecondary');
+        if (gpayLinkSecondary) {
+            gpayLinkSecondary.href = upiUrlBackup;
+        }
+    }
+
     if (!pendingData) {
         console.warn('No pending registration found in session. Using dummy data for demo.');
         document.getElementById('userName').textContent = "Guest User";
-        document.getElementById('payableAmount').textContent = "₹ 2,500";
-        
-        const demoAmount = 2500;
-        const upiUrl = getUpiUrl(demoAmount);
-        
-        const qrImg = document.querySelector('#paymentQR img');
-        if (qrImg) {
-            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`;
-        }
-        document.getElementById('gpayLink').href = upiUrl;
+        updatePaymentUI(2500);
     } else {
         document.getElementById('userName').textContent = pendingData.name;
-        document.getElementById('payableAmount').textContent = `₹ ${pendingData.paymentamount.toLocaleString()}`;
-        
-        const upiUrl = getUpiUrl(pendingData.paymentamount);
-        
-        const qrImg = document.querySelector('#paymentQR img');
-        if (qrImg) {
-            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`;
-        }
-        document.getElementById('gpayLink').href = upiUrl;
+        updatePaymentUI(pendingData.paymentamount);
     }
 
     // 3. HANDLE FILE INPUT UI
@@ -70,6 +78,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const originalText = copyBtn.textContent;
                 copyBtn.textContent = '✓ Copied ID!';
                 setTimeout(() => copyBtn.textContent = originalText, 2000);
+            });
+        });
+    }
+
+    const copyBtnBackup = document.getElementById('copyUpiBtnSecondary');
+    if (copyBtnBackup) {
+        copyBtnBackup.addEventListener('click', () => {
+            navigator.clipboard.writeText(upiIdBackup).then(() => {
+                const originalText = copyBtnBackup.textContent;
+                copyBtnBackup.textContent = '✓ Copied ID!';
+                setTimeout(() => copyBtnBackup.textContent = originalText, 2000);
             });
         });
     }
