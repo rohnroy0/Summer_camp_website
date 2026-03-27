@@ -34,14 +34,7 @@
                     <div class="payment-qr-side">
                         <!-- Primary Scanner -->
                         <div class="qr-wrapper primary-qr">
-                            <div class="qr-container">
-                                <div id="paymentQR" class="qr-placeholder">
-                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=229675178001671@cnrb&pn=IEEE%20SB%20VJEC&cu=INR" alt="Payment QR Code">
-                                </div>
-                                <p class="qr-hint">Scan to pay with any UPI App</p>
-                            </div>
-                            
-                            <div class="upi-direct">
+                            <div class="upi-direct" style="margin-bottom: 30px;">
                                 <span>Pay directly using:</span>
                                 <a href="#" id="gpayLink" class="btn-gpay">
                                     <svg viewBox="0 0 24 24" width="28" height="28" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 8px rgba(255,255,255,0.15));">
@@ -56,6 +49,13 @@
                                     📋 Copy UPI ID: 229675178001671@cnrb
                                 </button>
                             </div>
+
+                            <div class="qr-container">
+                                <div id="paymentQR" class="qr-placeholder">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=229675178001671@cnrb&pn=IEEE%20SB%20VJEC&cu=INR" alt="Payment QR Code">
+                                </div>
+                                <p class="qr-hint">Scan to pay with any UPI App</p>
+                            </div>
                         </div>
 
                         <!-- Divider for Secondary Option -->
@@ -68,14 +68,8 @@
                             <div class="qr-note-box">
                                 <p>⚠️ Encountering banking server issues? Use this secondary scanner for a seamless and instant transaction.</p>
                             </div>
-                            <div class="qr-container">
-                                <div id="backupQR" class="qr-placeholder">
-                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=alanantony896@oksbi&pn=Alan%20Antony&cu=INR" alt="Secondary Payment QR Code">
-                                </div>
-                                <p class="qr-hint">Scan to pay with any UPI App</p>
-                            </div>
-                            
-                            <div class="upi-direct">
+
+                            <div class="upi-direct" style="margin-bottom: 30px;">
                                 <span>Pay directly using:</span>
                                 <a href="#" id="gpayLinkSecondary" class="btn-gpay backup-btn">
                                     <svg viewBox="0 0 24 24" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
@@ -89,6 +83,13 @@
                                 <button type="button" id="copyUpiBtnSecondary" class="btn-secondary" style="margin-top: 10px; font-size: 0.8rem; padding: 10px;">
                                     📋 Copy UPI ID: alanantony896@oksbi
                                 </button>
+                            </div>
+
+                            <div class="qr-container">
+                                <div id="backupQR" class="qr-placeholder">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=alanantony896@oksbi&pn=Alan%20Antony&cu=INR" alt="Secondary Payment QR Code">
+                                </div>
+                                <p class="qr-hint">Scan to pay with any UPI App</p>
                             </div>
                         </div>
                     </div>
